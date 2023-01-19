@@ -1,8 +1,12 @@
 // Import express package
 const express = require('express');
-const fs = require('fs');
+const { v4: uuidv4 } = require("uuid");
 const path = require('path');
-const dataBase = require('./db/db.json');
+const {
+  readFromFile,
+  readAndAppend,  
+  readAndDelete,
+} = require("./helpers/fsUtils.js");
 
 const PORT = process.env.PORT || 3000;
 // Initialize app variable by setting it to the value of express()
@@ -20,36 +24,31 @@ app.get('/', (req, res) =>
 );
 
 // GET HTML route for notes page
-app.get('/notes', (req, res) =>
+app.get("/notes", (req, res) => {
     res.sendFile(path.join(__dirname, '/public/notes.html'))
-);
-
-// GET API route for notes page
-app.get('/api/notes', (req, res) => {
-    res.json(dataBase.slice(1));
 });
 
-app.post('/api/notes', (req, res) => {
-    const newNote = createNote(req.body, dataBase);
+// app.get("*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "/public/index.html"));
+//   });
+
+// GET API route for notes page
+app.get("/api/notes", (req, res) => {
+  readFromFile("./db/db.json").then((data) => res.json(JSON.parse(data)));
+});
+
+app.post("/api/notes", (req, res) => {
+    const newNote = req.body;
+    newNote.id = uuidv4();
+  
+    readAndAppend(newNote, "./db/db.json");
     res.json(newNote);
-})
-
-function createNote(body, notesArray) {
-    const newNote = body;
-    if (!Array.isArray(notesArray) && (notesArray.length === 0)) {
-        notesArray = [];
-        notesArray.push(0);
-    }
-        body.id = notesArray.length;
-        notesArray[0]++;
-        notesArray.push(newNote);
-
-    fs.writeFileSync(
-        path.join(__dirname, './db/db.json'),
-        JSON.stringify(notesArray, null, 1)
-    );
-    return newNote;
-};
+  });
+  
+  app.delete("/api/notes/:id", (req, res) => {
+    readAndDelete(req.params.id, "./db/db.json");
+    res.json({ ok: true });
+  });
 
 // Listen for connections
 app.listen(PORT, () => {
