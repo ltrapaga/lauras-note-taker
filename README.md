@@ -31,8 +31,6 @@
 
   The following is needed to run tests: N/A
 
-* To run tests, run "npm test".
-
 ## Questions
 
   If you have any questions about the repository contact me directly at:
