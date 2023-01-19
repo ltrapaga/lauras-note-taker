@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const dataBase = require('./db/db.json');
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 // Initialize app variable by setting it to the value of express()
 const app = express();
 
@@ -26,8 +26,30 @@ app.get('/notes', (req, res) =>
 
 // GET API route for notes page
 app.get('/api/notes', (req, res) => {
-    res.json();
+    res.json(dataBase.slice(1));
 });
+
+app.post('/api/notes', (req, res) => {
+    const newNote = createNote(req.body, dataBase);
+    res.json(newNote);
+})
+
+function createNote(body, notesArray) {
+    const newNote = body;
+    if (!Array.isArray(notesArray) && (notesArray.length === 0)) {
+        notesArray = [];
+        notesArray.push(0);
+    }
+        body.id = notesArray.length;
+        notesArray[0]++;
+        notesArray.push(newNote);
+
+    fs.writeFileSync(
+        path.join(__dirname, './db/db.json'),
+        JSON.stringify(notesArray, null, 1)
+    );
+    return newNote;
+};
 
 // Listen for connections
 app.listen(PORT, () => {
