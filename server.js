@@ -1,10 +1,10 @@
 // Import express package
-const express = require('express');
+const express = require("express");
 const { v4: uuidv4 } = require("uuid");
-const path = require('path');
+const path = require("path");
 const {
   readFromFile,
-  readAndAppend,  
+  readAndAppend,
   readAndDelete,
 } = require("./helpers/fsUtils.js");
 
@@ -16,21 +16,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Add a static middleware for serving assets in the public folder
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // GET HTML route for homepage
-app.get('/', (req, res) =>
-    res.sendFile(path.join(__dirname, '/public/index.html'))
+app.get("/", (req, res) =>
+  res.sendFile(path.join(__dirname, "/public/index.html"))
 );
 
 // GET HTML route for notes page
 app.get("/notes", (req, res) => {
-    res.sendFile(path.join(__dirname, '/public/notes.html'))
+  res.sendFile(path.join(__dirname, "/public/notes.html"));
 });
-
-// app.get("*", (req, res) => {
-//     res.sendFile(path.join(__dirname, "/public/index.html"));
-//   });
 
 // GET API route for notes page
 app.get("/api/notes", (req, res) => {
@@ -38,19 +34,23 @@ app.get("/api/notes", (req, res) => {
 });
 
 app.post("/api/notes", (req, res) => {
-    const newNote = req.body;
-    newNote.id = uuidv4();
-  
-    readAndAppend(newNote, "./db/db.json");
-    res.json(newNote);
-  });
-  
-  app.delete("/api/notes/:id", (req, res) => {
-    readAndDelete(req.params.id, "./db/db.json");
-    res.json({ ok: true });
-  });
+  const newNote = req.body;
+  newNote.id = uuidv4();
+
+  readAndAppend(newNote, "./db/db.json");
+  res.json(newNote);
+});
+
+app.delete("/api/notes/:id", (req, res) => {
+  readAndDelete(req.params.id, "./db/db.json");
+  res.json({ ok: true });
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "/public/index.html"));
+});
 
 // Listen for connections
 app.listen(PORT, () => {
-    console.log(`App listening at http://localhost:${PORT}`);
+  console.log(`App listening at http://localhost:${PORT}`);
 });
